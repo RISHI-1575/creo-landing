@@ -1,223 +1,264 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Cormorant_Garamond, JetBrains_Mono, Pinyon_Script, Tiro_Devanagari_Hindi } from "next/font/google";
-import WorldStage from "@/components/world-stage";
-const COPYRIGHT = `© ${new Date().getFullYear()} SiferTech`;
-import "./world.css";
+import {
+  Geist_Mono,
+  Instrument_Serif,
+  Inter_Tight,
+  Noto_Sans_Bengali,
+  Noto_Sans_Devanagari,
+  Noto_Sans_Gujarati,
+  Noto_Sans_Gurmukhi,
+  Noto_Sans_Kannada,
+  Noto_Sans_Malayalam,
+  Noto_Sans_Oriya,
+  Noto_Sans_Tamil,
+  Noto_Sans_Telugu,
+} from "next/font/google";
+import CreoHome from "@/components/creo-home";
+import "./home.css";
 
-const script = Pinyon_Script({ subsets: ["latin"], weight: "400", variable: "--w-script", display: "swap" });
-const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["300", "500"], variable: "--w-serif", display: "swap" });
-const deva = Tiro_Devanagari_Hindi({ subsets: ["devanagari", "latin"], weight: "400", variable: "--w-deva", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], weight: "400", variable: "--w-mono", display: "swap" });
+// "Living Letters": one particle field spells Creo., melts into five Indian scripts, then
+// becomes a poster. The behaviour (WebGL, reel, wall, hold) lives in components/creo-home.tsx;
+// everything readable is real HTML here so it renders without JS.
+
+const display = Inter_Tight({ subsets: ["latin"], style: ["normal", "italic"], variable: "--font-display", display: "swap" });
+const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-serif", display: "swap" });
+const mono = Geist_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono", display: "swap" });
+const deva = Noto_Sans_Devanagari({ subsets: ["devanagari"], weight: ["600", "800"], variable: "--font-deva", display: "swap" });
+const tamil = Noto_Sans_Tamil({ subsets: ["tamil"], weight: ["600", "800"], variable: "--font-tamil", display: "swap" });
+const beng = Noto_Sans_Bengali({ subsets: ["bengali"], weight: ["600", "800"], variable: "--font-beng", display: "swap" });
+const knda = Noto_Sans_Kannada({ subsets: ["kannada"], weight: ["600", "800"], variable: "--font-knda", display: "swap" });
+const telu = Noto_Sans_Telugu({ subsets: ["telugu"], weight: "600", variable: "--font-telu", display: "swap" });
+const gujr = Noto_Sans_Gujarati({ subsets: ["gujarati"], weight: "600", variable: "--font-gujr", display: "swap" });
+const mlym = Noto_Sans_Malayalam({ subsets: ["malayalam"], weight: "600", variable: "--font-mlym", display: "swap" });
+const guru = Noto_Sans_Gurmukhi({ subsets: ["gurmukhi"], weight: "600", variable: "--font-guru", display: "swap" });
+const orya = Noto_Sans_Oriya({ subsets: ["oriya"], weight: "600", variable: "--font-orya", display: "swap" });
+const FONTS = [display, serif, mono, deva, tamil, beng, knda, telu, gujr, mlym, guru, orya].map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
-  title: "CREO — Your AI marketing team, in every language India speaks",
+  title: "Creo. — Your AI marketing team, in every language India speaks",
   description:
-    "Meet CREO: a brand, strategy, design, publishing, market research and analytics team for Indian businesses. On-brand, editable posts in 11 languages that never go live until you say yes.",
+    "Meet Creo: six AI specialists for Indian businesses. Brand, strategy, design, publishing, research and analytics. On-brand, editable posts in 11 languages that never go live until you say yes.",
   alternates: { canonical: "/" },
 };
 
-// Seven acts, one colour world each (the director in world-stage.tsx reads data-act order).
-// Beat timing: data-in / data-out are local act progress (0..1). Position classes place the beat.
-const LANGS: [string, string, string][] = [
-  ["hi", "नमस्ते", "Hindi"], ["bn", "নমস্কার", "Bengali"], ["ta", "வணக்கம்", "Tamil"],
-  ["te", "నమస్కారం", "Telugu"], ["mr", "नमस्कार", "Marathi"], ["gu", "નમસ્તે", "Gujarati"],
-  ["kn", "ನಮಸ್ಕಾರ", "Kannada"], ["ml", "നമസ്കാരം", "Malayalam"], ["pa", "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", "Punjabi"],
-  ["or", "ନମସ୍କାର", "Odia"], ["en", "Hello", "English"],
+const HELLO = ["नमस्ते", "নমস্কার", "வணக்கம்", "నమస్కారం", "नमस्कार", "નમસ્તે", "ನಮಸ್ಕಾರ", "നമസ്കാരം", "ਸਤ ਸ੍ਰੀ ਅਕਾਲ", "ନମସ୍କାର", "Hello"];
+
+// Stage 0 is the hero; stages 1–4 are scripts; stage 5 is the poster. Order must match
+// WORDS in components/creo-home.tsx.
+const SCRIPTS = [
+  ["Hindi", "Devanagari script", "नमस्ते · namaste · hello", "The same letters, rearranged. Creo writes real text in every script, with real fonts."],
+  ["Tamil", "Tamil script", "வணக்கம் · vanakkam · hello", "Correct spelling, correct conjuncts. No broken glyphs on your poster."],
+  ["Bengali", "Bengali script", "নমস্কার · nomoskar · hello", "Write once in plain words. Publish in the language each customer thinks in."],
+  ["Kannada", "Kannada script", "ನಮಸ್ಕಾರ · namaskāra · hello", "Plus Telugu, Marathi, Gujarati, Malayalam, Punjabi, Odia and English."],
 ];
 
-// After the film the page scrolls like a normal site: how it works, questions, one last ask.
+const TEAM: { name: string; color: string; line: React.ReactNode; scene: React.ReactNode }[] = [
+  {
+    name: "Brand", color: "var(--rose)",
+    line: <>Learns your colours, fonts, logo and the way you talk. <em>Once.</em></>,
+    scene: <div className="c-scene sc-orbit"><i /><i /><i /><i /><b>Aa</b></div>,
+  },
+  {
+    name: "Strategist", color: "var(--saffron)",
+    line: <>Plans what to post this week, <em>and why.</em></>,
+    scene: (
+      <div className="c-scene"><div className="sc-week">
+        <div>Mon</div><div className="on">Tue<br />Offer</div><div>Wed</div><div className="on">Thu<br />Reel</div><div>Fri</div><div className="on">Sat<br />Sale</div><div>Sun</div>
+      </div></div>
+    ),
+  },
+  {
+    name: "Designer", color: "var(--violet)",
+    line: <>Writes the copy and designs the post, <em>in your languages.</em></>,
+    scene: <div className="c-scene sc-layers"><span>Background</span><span>Your photo</span><span lang="hi">इस हफ़्ते नया</span><span>Offer</span></div>,
+  },
+  {
+    name: "Manager", color: "var(--mint)",
+    line: <>Schedules what you approve, <em>and tells you when it&apos;s out.</em></>,
+    scene: (
+      <div className="c-scene"><div className="sc-toast">
+        <div>Approved by you<span>6:02 pm</span></div><div>Scheduled · Instagram<span>Sat 7:30</span></div><div>Posted ✓<span>Sat 7:30</span></div>
+      </div></div>
+    ),
+  },
+  {
+    name: "Research", color: "var(--cyan)",
+    line: <>Reads competitors&apos; public posts and finds the gaps, <em>so every post has a reason.</em></>,
+    scene: (
+      <div className="c-scene"><div className="sc-scan">
+        {Array.from({ length: 12 }, (_, i) => (i === 5 ? <div key={i} className="gap">GAP<br />no Tamil</div> : <div key={i} />))}
+      </div></div>
+    ),
+  },
+  {
+    name: "Analyst", color: "var(--amber)",
+    line: <>Reads your real results and tells you <em>what worked.</em></>,
+    scene: (
+      <div className="c-scene"><div className="sc-bars">
+        {[30, 46, 38, 62, 74, 92].map((h, i) => <i key={i} style={{ height: `${h}%`, animationDelay: `${i * 0.2}s` }} />)}
+      </div></div>
+    ),
+  },
+];
+
 const STEPS = [
-  ["Tell", "Describe your business in plain words — what you sell, who buys, what's coming up. CREO turns it into your brand kit."],
+  ["Tell", "Describe your business in plain words: what you sell, who buys, what's coming up. Creo turns it into your brand kit."],
   ["Choose", "Get three genuinely different directions, each with its caption. Pick one, or ask for changes the way you'd ask a person."],
-  ["Approve", "Every layer stays editable. Download it, or publish to your connected accounts — only when you say yes."],
+  ["Approve", "Every layer stays editable. Download it, or publish to your connected accounts, only when you say yes."],
 ];
 
 const FAQ = [
-  ["I'm not a designer. Can I really use this?", "Yes. You describe, choose and approve. The editor is there if you want to tweak something — you never have to."],
+  ["I'm not a designer. Can I really use this?", "Yes. You describe, choose and approve. The editor is there if you want to tweak something. You never have to."],
   ["Will it look like my brand, or like everyone else's?", "Every design is built from your brand kit: your colours, fonts, logo and tone of voice. Three directions per brief keep it from feeling templated."],
   ["Do I have to connect Instagram or Facebook?", "No. You can always download the design and copy the caption. Connecting is optional, and even then nothing posts without your approval."],
   ["Will AI change my product photos?", "No. Your uploads are placed as the original pixels. Any AI alteration is something you switch on, and it's saved as a new version."],
-  ["What does it cost?", "CREO is free during early access — no card required. You'll hear from us well before that changes."],
+  ["What does it cost?", "Creo is free during early access, with no card required. You'll hear from us well before that changes."],
 ];
 
-const CHAPTERS = ["Today", "You", "The ask", "The trap", "Your team", "At work", "Every language"];
-
-// The six specialists (docs/AGENT_SYSTEM.md). Beat k is live at local progress 0.17 + 0.13k —
-// world-stage.tsx highlights the matching orbiting node with the same timing.
-const AGENTS: [string, React.ReactNode, string?][] = [
-  ["Brand", <>learns your colours, fonts, logo and the way you talk — <em>once.</em></>],
-  ["Strategist", <>plans what to post this week, <em>and why.</em></>],
-  ["Designer", <>writes the copy and designs the post — <em>in your languages.</em></>],
-  ["Manager", <>schedules what you approve, <em>and tells you when it&apos;s out.</em></>],
-  ["Research", <>reads your competitors&apos; public posts and finds the gaps — <em>so every post has a reason.</em></>],
-  ["Analyst", <>reads your real results and tells you <em>what worked.</em></>],
+// Manifesto: plain words light up one by one on scroll; [kind, text] pieces.
+const MANIFESTO: [string, string][] = [
+  ["t", "You started a business to"], ["em", "make things."], ["t", "Not to make posts."], ["chip", "a"],
+  ["t", "So here is your team: six specialists who learn your brand"], ["em", "once,"],
+  ["t", "then plan, write, design and publish"], ["chip", "b"], ["t", "in the language your customers"], ["em", "think in."],
+  ["t", "And nothing goes live"], ["chip", "c"], ["t", "until you say"], ["foil", "yes."],
 ];
 
-export default function WorldPage() {
+export default function Home() {
   return (
-    <div className={`w ${script.variable} ${serif.variable} ${deva.variable} ${mono.variable}`} data-tone="dark" suppressHydrationWarning>
-      {/* Decide film mode before first paint so the static fallback never flashes. */}
+    <div className={`c ${FONTS}`} suppressHydrationWarning>
+      {/* Decide motion mode before first paint so the static layout never flashes. */}
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.currentScript.parentElement.classList.add('w-film')",
+            "if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.currentScript.parentElement.classList.add('motion','is-loading')",
         }}
       />
+      <CreoHome />
 
-      <header className="w-hud">
-        <Link href="/" className="w-mark">CREO</Link>
-        <nav className="w-ruler" aria-label="Chapters">
-          <span className="w-ruler-fill" aria-hidden="true" />
-          {CHAPTERS.map((c, i) => (
-            <a key={c} href={`#act-${i}`} data-chapter={i} aria-label={c}>
-              <i aria-hidden="true" />
-              <span>{c}</span>
-            </a>
-          ))}
+      <header className="c-nav c-pad">
+        <a className="c-wordmark" href="#letters">Creo.</a>
+        <nav className="c-nav-links" aria-label="Sections">
+          <a href="#manifesto">Why</a><a href="#team-wrap">Team</a><a href="#wall">Work</a><a href="#how">How</a>
         </nav>
-        <Link href="/login" className="w-hud-cta">Start free</Link>
+        <span className="c-clock" data-clock>IST</span>
+        <a className="c-nav-cta" href="/login">Start free</a>
       </header>
 
       <main>
-        <section className="w-act" id="act-0" data-act="0" style={{ "--h": 160 } as React.CSSProperties}>
-          <div className="w-stage">
-            <p className="w-beat w-c w-kicker" data-in="-1" data-out="0.55">For India&apos;s small businesses</p>
-            <h1 className="w-beat w-c w-low" data-in="-1" data-out="0.55">
-              Your business deserves <em>a whole team.</em>
-            </h1>
-            <div className="w-beat w-c w-bottom" data-in="-1" data-out="0.5">
-              <button type="button" className="w-hold" data-hold>
-                <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" /><circle cx="22" cy="22" r="20" data-hold-ring /></svg>
-                <span>Hold to switch on CREO</span>
-              </button>
-              <span className="w-hint">or scroll</span>
+        <section id="letters" aria-label="Creo in eleven scripts">
+          <div className="c-stage">
+            <div className="c-fallback-word" aria-hidden="true">Creo.</div>
+
+            <div className="c-cap c-hero-cap live" data-stage="0">
+              <div className="c-hero-kick c-mono"><span>(AI marketing team)</span><span>For India&apos;s small businesses</span></div>
+              <h1 className="c-hero-h">
+                <span className="c-line"><span>A whole marketing</span></span>
+                <span className="c-line"><span>team that speaks</span></span>
+                <span className="c-line"><span><em className="c-serif c-foil">your India.</em></span></span>
+              </h1>
+              <div className="c-hero-side">
+                <p><b>Six AI specialists</b> who learn your brand once, then plan, write and design your posts in eleven languages. Nothing goes live until you say yes.</p>
+                <a className="c-btn" href="/login" data-magnetic>Make my first post, free <span className="arr">→</span></a>
+              </div>
+              <div className="c-scroll-cue c-mono"><span>Scroll</span><i /></div>
             </div>
-          </div>
-        </section>
 
-        <section className="w-act" id="act-1" data-act="1" style={{ "--h": 260 } as React.CSSProperties}>
-          <div className="w-stage">
-            <h2 className="w-beat w-tl" data-in="0.08" data-out="0.5">You started a business <em>to make things.</em></h2>
-            <p className="w-beat w-br w-big" data-in="0.5" data-out="0.95">Not to make <em>posts.</em></p>
-          </div>
-        </section>
-
-        <section className="w-act" id="act-2" data-act="2" style={{ "--h": 340 } as React.CSSProperties}>
-          <div className="w-stage">
-            <h2 className="w-beat w-c w-big" data-in="0.06" data-out="0.32">But your customers <em>scroll.</em></h2>
-            <p className="w-beat w-tl" data-in="0.34" data-out="0.66">
-              They expect a post for every sale, every launch, every festival — <em>in their own language.</em>
-            </p>
-            <p className="w-beat w-br" data-in="0.68" data-out="0.96">Go quiet for a week, <em>and they scroll past you.</em></p>
-          </div>
-        </section>
-
-        <section className="w-act" id="act-3" data-act="3" style={{ "--h": 400 } as React.CSSProperties}>
-          <div className="w-stage">
-            <h2 className="w-beat w-tl" data-in="0.04" data-out="0.3">So you tried <em>an agency.</em> <small>Slow replies. Monthly bills.</small></h2>
-            <p className="w-beat w-br" data-in="0.3" data-out="0.55">You tried <em>templates.</em> <small>The same post as the shop next door.</small></p>
-            <p className="w-beat w-tl" data-in="0.55" data-out="0.8">
-              You asked <em>a generic AI.</em> <small>It couldn&apos;t even spell <span lang="hi">नमस्ते</span>.</small>
-            </p>
-            <p className="w-beat w-c w-big" data-in="0.82" data-out="1.02">None of them <em>knew your brand.</em></p>
-          </div>
-        </section>
-
-        <section className="w-act" id="act-4" data-act="4" style={{ "--h": 520 } as React.CSSProperties}>
-          <div className="w-stage">
-            <h2 className="w-beat w-c w-intro" data-in="0.02" data-out="0.16">
-              <em>Introducing</em> <strong>CREO</strong>
-              <small>Six specialists. One team. Working for you.</small>
-            </h2>
-            {AGENTS.map(([name, line, tag], k) => (
-              <p
-                key={name}
-                className={`w-beat w-agent ${k % 2 ? "w-br" : "w-tl"}`}
-                data-in={(0.17 + 0.13 * k).toFixed(2)}
-                data-out={(0.3 + 0.13 * k).toFixed(2)}
-              >
-                <b>0{k + 1} · {name}{tag && <i> · {tag}</i>}</b>
-                {line}
-              </p>
+            {SCRIPTS.map(([name, script, hello, line], i) => (
+              <div className="c-cap c-lang-cap" data-stage={i + 1} key={name}>
+                <div className="lc-right"><p className="lc-num">0{i + 2}<small> / 06</small></p><p className="c-mono">{script}</p></div>
+                <div className="lc-left"><p className="c-mono">{hello}</p><p className="lc-name">{name}</p><p className="lc-mean">{line}</p></div>
+              </div>
             ))}
+
+            <div className="c-cap c-poster-cap" data-stage="5">
+              <div className="pc-h">
+                <h2>Every letter<br />becomes <em className="c-serif c-foil">a post.</em></h2>
+                <p>Layered, editable, on-brand. Your photos stay the original pixels. Never a flat picture.</p>
+              </div>
+            </div>
+
+            <div className="c-rail" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <i key={i}><b /></i>)}</div>
           </div>
         </section>
 
-        <section className="w-act" id="act-5" data-act="5" style={{ "--h": 420 } as React.CSSProperties}>
-          <div className="w-stage">
-            <h2 className="w-beat w-tl" data-in="0.04" data-out="0.3">
-              Watch them make <em>one post.</em> <small>Brand facts in, a finished design out.</small>
-            </h2>
-            <p className="w-beat w-bl" data-in="0.36" data-out="0.72">
-              Every post comes <em>in layers you can edit.</em>
-              <small>Real fonts. Real text in every script. Never a flat picture.</small>
-            </p>
-            <p className="w-beat w-bl w-big" data-in="0.76" data-out="1.02">Nothing goes live <em>until you say yes.</em></p>
-            <p className="w-beat w-foot" data-in="0.2" data-out="0.74">Real CREO post · The Pizza Bakery, Bengaluru</p>
-          </div>
+        <section className="c-manifesto c-pad" id="manifesto">
+          <div className="meta c-mono"><span>(Why Creo)</span><span>01 — Manifesto</span></div>
+          <p className="big" data-manifesto>
+            {MANIFESTO.map(([kind, text], k) => {
+              if (kind === "chip") return <span key={k}><span className={`w c-chip ${text}`} aria-hidden="true" /> </span>;
+              if (kind === "em") return <span key={k}><em className="w c-serif">{text}</em> </span>;
+              if (kind === "foil") return <em key={k} className="w c-serif c-foil">{text}</em>;
+              return <span key={k}>{text.split(" ").map((word, j) => <span key={j}><span className="w">{word}</span> </span>)}</span>;
+            })}
+          </p>
         </section>
 
-        <section className="w-act" id="act-6" data-act="6" style={{ "--h": 340 } as React.CSSProperties}>
-          <div className="w-stage">
-            <h2 className="w-beat w-tl" data-in="0.04" data-out="0.42">
-              Speak to every customer <em>in the language they think in.</em>
-            </h2>
-            <ul className="w-beat w-langs" data-in="0.12" data-out="0.42" aria-label="Languages CREO writes in">
-              {LANGS.map(([code, word, name]) => (
-                <li key={code}><span lang={code}>{word}</span><small>{name}</small></li>
+        <div className="c-marquee" aria-label="Hello in eleven languages">
+          <div className="mq-track">{[...HELLO, ...HELLO].map((w, i) => <span key={i} aria-hidden={i >= HELLO.length}>{w}</span>)}</div>
+        </div>
+
+        <div id="team-wrap">
+          <section id="team" aria-label="The team">
+            <div className="c-reel" data-reel>
+              <div className="c-panel intro">
+                <h2>Meet your<br /><em className="c-serif c-foil">team.</em><sup>(06)</sup></h2>
+                <p>Each specialist has one job and does it every week, for your shop only.</p>
+              </div>
+              {TEAM.map((t, i) => (
+                <article className="c-panel" style={{ "--c": t.color } as React.CSSProperties} key={t.name}>
+                  <div className="p-top"><span className="p-num" aria-hidden="true">0{i + 1}</span><span className="p-tag c-mono"><i />{t.name}</span></div>
+                  <div aria-hidden="true">{t.scene}</div>
+                  <div className="p-bottom"><h3 className="p-name">{t.name}</h3><p className="p-line">{t.line}</p></div>
+                </article>
               ))}
-            </ul>
-            <div className="w-beat w-c w-final" data-in="0.46" data-out="9">
-              <h2>Your first post is free. <em>Meet your team today.</em></h2>
-              <Link href="/login" className="w-cta-big">Make my first post — free</Link>
-              <p className="w-small">Every poster here was made by CREO · drag to spin</p>
             </div>
+            <div className="c-reel-bar"><b data-reel-bar /></div>
+          </section>
+        </div>
+
+        <section id="wall" aria-label="Posters made by Creo" data-cursor="Drag">
+          <div className="c-wall-3d"><div className="c-plane" data-plane /></div>
+          <div className="c-wall-fade" />
+          <div className="c-wall-over"><h2>Every poster here<br /><em className="c-serif">was made by Creo.</em></h2></div>
+          <div className="c-wall-meta c-mono"><span>Drag to explore</span><span>Real Creo posters</span></div>
+        </section>
+
+        <section id="yes" aria-label="Approve">
+          <div className="c-flood" data-flood />
+          <div className="c-yes-in c-pad">
+            <p className="c-mono">(The only rule)</p>
+            <h2 className="c-yes-h">Nothing goes live<br />until you say <em className="c-serif c-foil">yes.</em></h2>
+            <button className="c-hold" type="button" data-hold data-cursor="Hold" aria-describedby="yes-msg"><span>Press<br />&amp; hold</span></button>
+            <p className="c-yes-msg" id="yes-msg" aria-live="polite">Try it. This is the only button Creo needs from you.</p>
           </div>
         </section>
-      </main>
 
-      <div className="w-after">
-        <section id="how" aria-labelledby="how-h">
-          <p className="w-kicker">How it works</p>
-          <h2 id="how-h">Three steps. <em>You stay in charge.</em></h2>
-          <ol className="w-steps">
-            {STEPS.map(([name, text], k) => (
-              <li key={name}><b>0{k + 1} · {name}</b><p>{text}</p></li>
-            ))}
+        <section className="c-how c-pad" id="how">
+          <div className="how-l"><p className="c-mono">(How it works)</p><h2>Three steps.<br /><em className="c-serif c-foil">You stay in charge.</em></h2></div>
+          <ol className="c-steps">
+            {STEPS.map(([name, text]) => <li key={name}><div><h3>{name}</h3><p>{text}</p></div></li>)}
           </ol>
         </section>
 
-        <section id="faq" aria-labelledby="faq-h">
-          <p className="w-kicker">Questions</p>
-          <h2 id="faq-h">What owners <em>ask us first.</em></h2>
-          <div className="w-faq">
-            {FAQ.map(([q, a]) => (
-              <details key={q}><summary>{q}</summary><p>{a}</p></details>
-            ))}
+        <section className="c-faq c-pad" id="faq">
+          <h2>What owners<br /><em className="c-serif">ask us first.</em></h2>
+          <div>{FAQ.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div>
+        </section>
+      </main>
+
+      <footer className="c-footer">
+        <div className="c-pad">
+          <div className="f-top">
+            <h2>Your team is ready. <em className="c-serif c-foil">Your first post is free.</em></h2>
+            <a className="c-btn" href="/login" data-magnetic>Make my first post <span className="arr">→</span></a>
           </div>
-        </section>
-
-        <section className="w-last" aria-labelledby="last-h">
-          <h2 id="last-h">Ready when you are. <em>Your first post is free.</em></h2>
-          <Link href="/login" className="w-cta-big">Make my first post — free</Link>
-        </section>
-      </div>
-
-      <footer className="w-footer">
-        <span>{COPYRIGHT}</span>
-        <Link href="/classic">Classic page</Link>
-        <Link href="/pricing">Pricing</Link>
-        <Link href="/privacy">Privacy</Link>
-        <Link href="/terms">Terms</Link>
+          <div className="f-links">
+            <span>© {new Date().getFullYear()} SiferTech</span>
+            <a href="/pricing">Pricing</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/classic">Classic page</a>
+          </div>
+        </div>
+        <div className="c-giant" aria-hidden="true">{"Creo.".split("").map((ch, i) => <span key={i}>{ch}</span>)}</div>
       </footer>
-
-      <Link href="/login" className="w-pill" data-pill>
-        <span className="w-pill-dot" aria-hidden="true" />
-        Make my first post — free
-      </Link>
-
-      <WorldStage />
     </div>
   );
 }
